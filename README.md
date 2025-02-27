@@ -5,7 +5,7 @@
 Run using `go`:
 
 ```bash
-go run ./bin
+go run .
 ```
 
 Or install to `GOPATH/bin`/`GOBIN`:
