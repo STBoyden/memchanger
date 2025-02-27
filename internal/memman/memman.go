@@ -37,6 +37,9 @@ func ReadMemoryHelper[T any](memoryManager MemoryManager, address int64) ([]byte
 	return memoryManager.ReadMemory(address, size)
 }
 
+// GetMemoryManager returns the memory manager for the current platform. On
+// Linux, it returns a linuxMemoryManager instance. On Windows, it returns a
+// windowsMemoryManager instance.
 func GetMemoryManager() MemoryManager {
 	return getMemoryManager()
 }
