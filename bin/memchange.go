@@ -1,11 +1,11 @@
-package memchange
+package main
 
 import (
 	"fmt"
 	"memchange/pkg/procman"
 )
 
-func MemChangeMain() {
+func main() {
 	procIDs, _ := procman.GetProcessManager().GetProcessIDs()
 
 	for _, id := range procIDs {
