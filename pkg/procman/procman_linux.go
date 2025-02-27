@@ -10,15 +10,15 @@ import (
 	"github.com/wneessen/go-fileperm"
 )
 
-type LinuxProcessManager struct{}
+type linuxProcessManager struct{}
 
-func GetProcessManager() *LinuxProcessManager {
-	return &LinuxProcessManager{}
+var _ ProcessManager = (*linuxProcessManager)(nil)
+
+func getProcessManager() *linuxProcessManager {
+	return &linuxProcessManager{}
 }
 
-var _ ProcessManager = (*LinuxProcessManager)(nil)
-
-func (lpm *LinuxProcessManager) GetProcessIDs() ([]int, error) {
+func (lpm *linuxProcessManager) GetProcessIDs() ([]int, error) {
 	// all the currently running processes are available in /proc folder on linux
 	procEntries, err := os.ReadDir("/proc")
 	if err != nil {
@@ -27,7 +27,8 @@ func (lpm *LinuxProcessManager) GetProcessIDs() ([]int, error) {
 
 	procIDs := []int{}
 	for _, e := range procEntries {
-		// process folders are just integers, any file that *isn't* is not a process and should be ignored
+		// process folders are just integers, any file that *isn't* is not a
+		// process and should be ignored
 		id, err := strconv.Atoi(e.Name())
 		if err != nil {
 			continue
@@ -38,7 +39,8 @@ func (lpm *LinuxProcessManager) GetProcessIDs() ([]int, error) {
 			continue
 		}
 
-		// we want to filter out any and all processes that are not owned or at least read/writable by the current user
+		// we want to filter out any and all processes that are not owned or at
+		// least read/writable by the current user
 		if !perms.UserWriteReadable() {
 			continue
 		}
@@ -49,7 +51,7 @@ func (lpm *LinuxProcessManager) GetProcessIDs() ([]int, error) {
 	return procIDs, nil
 }
 
-func (lpm *LinuxProcessManager) GetProcessInformation(processID int) (*ProcessInformation, error) {
+func (lpm *linuxProcessManager) GetProcessInformation(processID int) (*ProcessInformation, error) {
 	procStatusFile := fmt.Sprintf("/proc/%d/status", processID)
 
 	file, err := os.Open(procStatusFile)
