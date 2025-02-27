@@ -1,7 +1,7 @@
 [
   {
     "label": "Run",
-    "command": "go run .",
+    "command": "sudo /usr/local/go/bin/go run .",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "reveal": "always",
