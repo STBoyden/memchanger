@@ -8,10 +8,14 @@ Run using `go`:
 go run ./bin
 ```
 
-Or install to GOPATH/GOBIN:
+Or install to `GOPATH/bin`/`GOBIN`:
 
 ```bash
 go install github.com/STBoyden/memchanger@latest
-# then run
-memchange
+```
+
+Then run with (assuming `GOPATH/bin`/`GOBIN` is in `PATH`):
+
+```bash
+memchanger
 ```
