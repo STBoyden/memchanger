@@ -1,6 +1,6 @@
 package main
 
-import "github.com/STBoyden/memchange/cmd"
+import "github.com/STBoyden/memchanger/cmd"
 
 func main() {
 	cmd.Run()

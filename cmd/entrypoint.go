@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/STBoyden/memchange/internal/procman"
+	"github.com/STBoyden/memchanger/internal/procman"
 )
 
 func Run() {

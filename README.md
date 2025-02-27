@@ -11,7 +11,7 @@ go run ./bin
 Or install to GOPATH/GOBIN:
 
 ```bash
-go install github.com/STBoyden/memchange@latest
+go install github.com/STBoyden/memchanger@latest
 # then run
 memchange
 ```

@@ -1,4 +1,4 @@
-module github.com/STBoyden/memchange
+module github.com/STBoyden/memchanger
 
 go 1.24.0
 
