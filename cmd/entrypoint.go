@@ -3,15 +3,22 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/STBoyden/memchanger/internal/memman"
 	"github.com/STBoyden/memchanger/internal/procman"
 )
 
 func Run() {
 	procIDs, _ := procman.GetProcessManager().GetProcessIDs()
 
-	for _, id := range procIDs {
-		procInfo, _ := procman.GetProcessManager().GetProcessInformation(id)
+	procInfo, _ := procman.GetProcessManager().GetProcessInformation(procIDs[0])
+	fmt.Printf("PID: %d\n", procInfo.PID)
+	memoryManager := memman.GetMemoryManager()
 
-		fmt.Printf("Process name: %s; Process ID: %d\n", procInfo.Name, procInfo.ID)
+	memoryManager.LoadProcess(*procInfo)
+	mem, err := memman.ReadMemoryHelper[int](memoryManager, 0x2)
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
+	} else {
+		fmt.Printf("mem: %v\n", mem)
 	}
 }

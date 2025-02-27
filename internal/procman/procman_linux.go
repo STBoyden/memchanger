@@ -10,6 +10,21 @@ import (
 	"github.com/wneessen/go-fileperm"
 )
 
+// LinuxProcessInformation contains specific information about a process on Linux
+type LinuxProcessInformation struct {
+	MemoryFilePath string // Path to the mem file for the process
+	MapFilePath    string // Path to the map file for the process
+	SMapFilePath   string // Path to the smap file for the process
+	StatusFilePath string // Path to the status file for the process
+}
+
+func (lpi *LinuxProcessInformation) GetPlatformType() platform {
+	return Linux
+}
+
+var _ platformProcessInformation = (*LinuxProcessInformation)(nil)
+
+// linuxProcessManager is a ProcessManager implementation for Linux
 type linuxProcessManager struct{}
 
 var _ ProcessManager = (*linuxProcessManager)(nil)
@@ -60,7 +75,17 @@ func (lpm *linuxProcessManager) GetProcessInformation(processID int) (*ProcessIn
 	}
 	defer file.Close()
 
-	procInfo := ProcessInformation{ID: processID}
+	executableFilePath, err := os.Readlink(fmt.Sprintf("/proc/%d/exe", processID))
+	if err != nil {
+		executableFilePath = "< none found >"
+	}
+
+	procInfo := ProcessInformation{PID: processID, ExecutableFilePath: executableFilePath, PlatformInformation: &LinuxProcessInformation{
+		MemoryFilePath: fmt.Sprintf("/proc/%d/mem", processID),
+		MapFilePath:    fmt.Sprintf("/proc/%d/maps", processID),
+		SMapFilePath:   fmt.Sprintf("/proc/%d/smaps", processID),
+		StatusFilePath: procStatusFile,
+	}}
 
 	scanner := bufio.NewScanner(file)
 	lines := 0
@@ -73,6 +98,7 @@ func (lpm *linuxProcessManager) GetProcessInformation(processID int) (*ProcessIn
 		name := strings.TrimSpace(split[1])
 
 		procInfo.Name = name
+		procInfo.WindowName = name
 
 		lines++
 	}
