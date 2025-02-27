@@ -1,11 +1,12 @@
-package main
+package cmd
 
 import (
 	"fmt"
-	"memchange/pkg/procman"
+
+	"github.com/STBoyden/memchange/internal/procman"
 )
 
-func main() {
+func Run() {
 	procIDs, _ := procman.GetProcessManager().GetProcessIDs()
 
 	for _, id := range procIDs {
