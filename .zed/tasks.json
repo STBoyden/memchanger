@@ -1,7 +1,17 @@
 [
   {
     "label": "Build",
-    "command": "just",
+    "command": "just build",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "reveal_target": "dock",
+    "hide": "never",
+    "shell": "system"
+  },
+  {
+    "label": "Run",
+    "command": "just run",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "reveal": "always",

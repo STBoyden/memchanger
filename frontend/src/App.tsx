@@ -1,28 +1,34 @@
-import {useState} from 'react';
-import logo from './assets/images/logo-universal.png';
-import './App.css';
-import {Greet} from "../wailsjs/go/main/App";
+import { useState } from "react";
+import "./App.css";
+import { GetAllRunningProcesses } from "../wailsjs/go/main/App";
+import { useEffect } from "react";
 
 function App() {
-    const [resultText, setResultText] = useState("Please enter your name below 👇");
-    const [name, setName] = useState('');
-    const updateName = (e: any) => setName(e.target.value);
-    const updateResultText = (result: string) => setResultText(result);
+  const [resultText, setResultText] = useState(
+    "Please enter your name below 👇",
+  );
+  const [processes, setProcesses] = useState<string[]>([]);
 
-    function greet() {
-        Greet(name).then(updateResultText);
-    }
+  useEffect(() => {
+    const getRunningProcesses = async () => {
+      const processes = await GetAllRunningProcesses();
+      setProcesses(processes);
+    };
 
-    return (
-        <div id="App">
-            <img src={logo} id="logo" alt="logo"/>
-            <div id="result" className="result">{resultText}</div>
-            <div id="input" className="input-box">
-                <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text"/>
-                <button className="btn" onClick={greet}>Greet</button>
-            </div>
-        </div>
-    )
+    getRunningProcesses();
+  }, []);
+
+  return (
+    <div>
+      {processes.map((process, index) => {
+        return (
+          <div key={index} className="process">
+            {process}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
-export default App
+export default App;
