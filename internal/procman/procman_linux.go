@@ -10,7 +10,8 @@ import (
 	"github.com/wneessen/go-fileperm"
 )
 
-// LinuxProcessInformation contains specific information about a process on Linux
+// LinuxProcessInformation contains specific information about a process on
+// Linux
 type LinuxProcessInformation struct {
 	MemoryFilePath string // Path to the mem file for the process
 	MapFilePath    string // Path to the map file for the process
@@ -34,7 +35,8 @@ func getProcessManager() *linuxProcessManager {
 }
 
 func (lpm *linuxProcessManager) GetProcessIDs() ([]int, error) {
-	// all the currently running processes are available in /proc folder on linux
+	// all the currently running processes are available in /proc folder on
+	// linux
 	procEntries, err := os.ReadDir("/proc")
 	if err != nil {
 		return nil, err
@@ -80,12 +82,15 @@ func (lpm *linuxProcessManager) GetProcessInformation(processID int) (*ProcessIn
 		executableFilePath = "< none found >"
 	}
 
-	procInfo := ProcessInformation{PID: processID, ExecutableFilePath: executableFilePath, PlatformInformation: &LinuxProcessInformation{
-		MemoryFilePath: fmt.Sprintf("/proc/%d/mem", processID),
-		MapFilePath:    fmt.Sprintf("/proc/%d/maps", processID),
-		SMapFilePath:   fmt.Sprintf("/proc/%d/smaps", processID),
-		StatusFilePath: procStatusFile,
-	}}
+	procInfo := ProcessInformation{
+		PID:                processID,
+		ExecutableFilePath: executableFilePath,
+		PlatformInformation: &LinuxProcessInformation{
+			MemoryFilePath: fmt.Sprintf("/proc/%d/mem", processID),
+			MapFilePath:    fmt.Sprintf("/proc/%d/maps", processID),
+			SMapFilePath:   fmt.Sprintf("/proc/%d/smaps", processID),
+			StatusFilePath: procStatusFile,
+		}}
 
 	scanner := bufio.NewScanner(file)
 	lines := 0
