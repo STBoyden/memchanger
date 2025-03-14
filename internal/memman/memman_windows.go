@@ -3,7 +3,7 @@ package memman
 import (
 	"context"
 
-	"github.com/STBoyden/memchanger/internal/procman"
+	"github.com/STBoyden/memchanger/internal/common"
 )
 
 type windowsMemoryManager struct {
@@ -16,7 +16,7 @@ func getMemoryManager() *windowsMemoryManager {
 	return &windowsMemoryManager{}
 }
 
-func (w *windowsMemoryManager) LoadProcess(processInformation procman.ProcessInformation) error {
+func (w *windowsMemoryManager) LoadProcess(processInformation common.ProcessInformation) error {
 	return nil
 }
 

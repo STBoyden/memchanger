@@ -9,13 +9,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/STBoyden/memchanger/internal/procman"
+	"github.com/STBoyden/memchanger/internal/common"
 )
 
 type linuxMemoryManager struct {
 	ctx              context.Context
 	heapAddressRange *AddressRange
-	procInfo         *procman.LinuxProcessInformation
+	procInfo         *common.LinuxProcessInformation
 }
 
 var _ platformMemoryManager = (*linuxMemoryManager)(nil)
@@ -88,8 +88,8 @@ func (l *linuxMemoryManager) parseMemoryMap(mapFile string) error {
 	return nil
 }
 
-func (l *linuxMemoryManager) LoadProcess(processInformation procman.ProcessInformation) error {
-	l.procInfo = processInformation.PlatformInformation.(*procman.LinuxProcessInformation)
+func (l *linuxMemoryManager) LoadProcess(processInformation common.ProcessInformation) error {
+	l.procInfo = processInformation.PlatformInformation.(*common.LinuxProcessInformation)
 	err := l.parseMemoryMap(l.procInfo.MapFilePath)
 
 	return err

@@ -1,6 +1,10 @@
 package procman
 
-import "context"
+import (
+	"context"
+
+	"github.com/STBoyden/memchanger/internal/common"
+)
 
 type windowsProcessManager struct {
 	ctx context.Context
@@ -16,7 +20,7 @@ func (w *windowsProcessManager) GetProcessIDs() ([]int, error) {
 	return nil, nil
 }
 
-func (w *windowsProcessManager) GetProcessInformation(processID int) (*ProcessInformation, error) {
+func (w *windowsProcessManager) GetProcessInformation(processID int) (*common.ProcessInformation, error) {
 	return nil, nil
 }
 

@@ -1,3 +1,30 @@
+export namespace common {
+	
+	export class ProcessInformation {
+	    Name: string;
+	    WindowName: string;
+	    PID: number;
+	    ExecutableFilePath: string;
+	    HeapMemoryUsage: number;
+	    PlatformInformation: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new ProcessInformation(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.WindowName = source["WindowName"];
+	        this.PID = source["PID"];
+	        this.ExecutableFilePath = source["ExecutableFilePath"];
+	        this.HeapMemoryUsage = source["HeapMemoryUsage"];
+	        this.PlatformInformation = source["PlatformInformation"];
+	    }
+	}
+
+}
+
 export namespace memman {
 	
 	export class AddressRange {
@@ -31,26 +58,6 @@ export namespace memman {
 
 export namespace procman {
 	
-	export class ProcessInformation {
-	    Name: string;
-	    WindowName: string;
-	    PID: number;
-	    ExecutableFilePath: string;
-	    PlatformInformation: any;
-	
-	    static createFrom(source: any = {}) {
-	        return new ProcessInformation(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Name = source["Name"];
-	        this.WindowName = source["WindowName"];
-	        this.PID = source["PID"];
-	        this.ExecutableFilePath = source["ExecutableFilePath"];
-	        this.PlatformInformation = source["PlatformInformation"];
-	    }
-	}
 	export class ProcessManager {
 	
 	
