@@ -1,4 +1,4 @@
-package procman
+package process
 
 import (
 	"context"

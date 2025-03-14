@@ -1,4 +1,4 @@
-package procman
+package process
 
 import (
 	"bufio"
@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/STBoyden/memchanger/internal/common"
-	"github.com/STBoyden/memchanger/internal/memman"
+	"github.com/STBoyden/memchanger/internal/memory"
 	"github.com/wneessen/go-fileperm"
 )
 
@@ -73,7 +73,7 @@ func (l *linuxProcessManager) GetProcessInformation(processID int) (*common.Proc
 	}
 
 	var memoryUsage int64
-	heapRange, err := memman.GetMemoryManager().GetHeapAddressRange()
+	heapRange, err := memory.GetMemoryManager().GetHeapAddressRange()
 	if err != nil {
 		memoryUsage = -1
 	}

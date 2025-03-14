@@ -25,7 +25,7 @@ export namespace common {
 
 }
 
-export namespace memman {
+export namespace memory {
 	
 	export class AddressRange {
 	    Start: number;
@@ -56,7 +56,7 @@ export namespace memman {
 
 }
 
-export namespace procman {
+export namespace process {
 	
 	export class ProcessManager {
 	

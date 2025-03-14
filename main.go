@@ -3,8 +3,8 @@ package main
 import (
 	"embed"
 
-	"github.com/STBoyden/memchanger/internal/memman"
-	"github.com/STBoyden/memchanger/internal/procman"
+	"github.com/STBoyden/memchanger/internal/memory"
+	"github.com/STBoyden/memchanger/internal/process"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -14,8 +14,8 @@ import (
 var assets embed.FS
 
 func main() {
-	processManager := procman.GetProcessManager()
-	memoryManager := memman.GetMemoryManager()
+	processManager := process.GetProcessManager()
+	memoryManager := memory.GetMemoryManager()
 
 	// Create an instance of the app structure
 	app := NewApp(processManager, memoryManager)

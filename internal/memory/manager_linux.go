@@ -1,4 +1,4 @@
-package memman
+package memory
 
 import (
 	"bufio"

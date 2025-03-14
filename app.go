@@ -4,18 +4,18 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/STBoyden/memchanger/internal/memman"
-	"github.com/STBoyden/memchanger/internal/procman"
+	"github.com/STBoyden/memchanger/internal/memory"
+	"github.com/STBoyden/memchanger/internal/process"
 )
 
 // App struct
 type App struct {
 	ctx            context.Context
-	processManager *procman.ProcessManager
-	memoryManager  *memman.MemoryManager
+	processManager *process.ProcessManager
+	memoryManager  *memory.MemoryManager
 }
 
-func NewApp(processManager *procman.ProcessManager, memoryManager *memman.MemoryManager) *App {
+func NewApp(processManager *process.ProcessManager, memoryManager *memory.MemoryManager) *App {
 	return &App{processManager: processManager, memoryManager: memoryManager}
 }
 
@@ -25,11 +25,11 @@ func (a *App) startup(ctx context.Context) {
 	a.memoryManager.SetContext(ctx)
 }
 
-func (a *App) GetMemoryManager() *memman.MemoryManager {
+func (a *App) GetMemoryManager() *memory.MemoryManager {
 	return a.memoryManager
 }
 
-func (a *App) GetProcessManager() *procman.ProcessManager {
+func (a *App) GetProcessManager() *process.ProcessManager {
 	return a.processManager
 }
 
