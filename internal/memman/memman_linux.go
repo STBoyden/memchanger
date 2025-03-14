@@ -2,6 +2,7 @@ package memman
 
 import (
 	"bufio"
+	"context"
 	"encoding/binary"
 	"os"
 	"reflect"
@@ -12,11 +13,12 @@ import (
 )
 
 type linuxMemoryManager struct {
+	ctx              context.Context
 	heapAddressRange *AddressRange
 	procInfo         *procman.LinuxProcessInformation
 }
 
-var _ MemoryManager = (*linuxMemoryManager)(nil)
+var _ platformMemoryManager = (*linuxMemoryManager)(nil)
 
 func getMemoryManager() *linuxMemoryManager {
 	return &linuxMemoryManager{}
@@ -38,7 +40,7 @@ func parseAddress(addressRangeStr string) (int64, int64, error) {
 	return startAddr, endAddr, nil
 }
 
-func (lmm *linuxMemoryManager) parseMemoryMap(mapFile string) error {
+func (l *linuxMemoryManager) parseMemoryMap(mapFile string) error {
 	file, err := os.Open(mapFile)
 	if err != nil {
 		return err
@@ -81,38 +83,38 @@ func (lmm *linuxMemoryManager) parseMemoryMap(mapFile string) error {
 		}
 	}
 
-	lmm.heapAddressRange = &AddressRange{Start: heapStartAddr, End: heapEndAddr}
+	l.heapAddressRange = &AddressRange{Start: heapStartAddr, End: heapEndAddr}
 
 	return nil
 }
 
-func (lmm *linuxMemoryManager) LoadProcess(processInformation procman.ProcessInformation) error {
-	lmm.procInfo = processInformation.PlatformInformation.(*procman.LinuxProcessInformation)
-	err := lmm.parseMemoryMap(lmm.procInfo.MapFilePath)
+func (l *linuxMemoryManager) LoadProcess(processInformation procman.ProcessInformation) error {
+	l.procInfo = processInformation.PlatformInformation.(*procman.LinuxProcessInformation)
+	err := l.parseMemoryMap(l.procInfo.MapFilePath)
 
 	return err
 }
 
-func (lmm *linuxMemoryManager) GetHeapAddressRange() (*AddressRange, error) {
-	if lmm.heapAddressRange == nil {
+func (l *linuxMemoryManager) GetHeapAddressRange() (*AddressRange, error) {
+	if l.heapAddressRange == nil {
 		return nil, &ReadWriteMemoryError{reason: ProcessNotLoaded}
 	}
 
-	return lmm.heapAddressRange, nil
+	return l.heapAddressRange, nil
 }
 
-func (lmm *linuxMemoryManager) ReadMemory(offset int64, size int) ([]byte, error) {
-	if lmm.heapAddressRange == nil {
+func (l *linuxMemoryManager) ReadMemory(offset int64, size int) ([]byte, error) {
+	if l.heapAddressRange == nil {
 		return nil, &ReadWriteMemoryError{reason: ProcessNotLoaded}
 	}
 
-	address := int64(lmm.heapAddressRange.Start) + int64(offset)
+	address := int64(l.heapAddressRange.Start) + int64(offset)
 
-	if address > lmm.heapAddressRange.End {
+	if address > l.heapAddressRange.End {
 		return nil, &ReadWriteMemoryError{reason: GivenAddressOutOfRange}
 	}
 
-	memFile, err := os.OpenFile(lmm.procInfo.MemoryFilePath, os.O_RDONLY, 0)
+	memFile, err := os.OpenFile(l.procInfo.MemoryFilePath, os.O_RDONLY, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -125,18 +127,18 @@ func (lmm *linuxMemoryManager) ReadMemory(offset int64, size int) ([]byte, error
 	return bytes, nil
 }
 
-func (lmm *linuxMemoryManager) WriteMemory(offset int64, value any) (int, error) {
-	if lmm.heapAddressRange == nil {
+func (l *linuxMemoryManager) WriteMemory(offset int64, value any) (int, error) {
+	if l.heapAddressRange == nil {
 		return 0, &ReadWriteMemoryError{reason: ProcessNotLoaded}
 	}
 
-	address := int64(lmm.heapAddressRange.Start) + int64(offset)
+	address := int64(l.heapAddressRange.Start) + int64(offset)
 	size := (int)(reflect.TypeOf(value).Elem().Size())
 
-	if address > lmm.heapAddressRange.End {
+	if address > l.heapAddressRange.End {
 		return 0, &ReadWriteMemoryError{reason: GivenAddressOutOfRange}
 	}
-	if address+int64(size) > lmm.heapAddressRange.End {
+	if address+int64(size) > l.heapAddressRange.End {
 		return 0, &ReadWriteMemoryError{reason: SizeTooBig}
 	}
 
@@ -172,7 +174,7 @@ func (lmm *linuxMemoryManager) WriteMemory(offset int64, value any) (int, error)
 		return 0, &ReadWriteMemoryError{reason: InvalidValueType}
 	}
 
-	memFile, err := os.OpenFile(lmm.procInfo.MemoryFilePath, os.O_WRONLY, 0)
+	memFile, err := os.OpenFile(l.procInfo.MemoryFilePath, os.O_WRONLY, 0)
 	if err != nil {
 		return 0, err
 	}
@@ -180,4 +182,8 @@ func (lmm *linuxMemoryManager) WriteMemory(offset int64, value any) (int, error)
 
 	memFile.Seek(address, 0)
 	return memFile.Write(bytes)
+}
+
+func (l *linuxMemoryManager) SetContext(ctx context.Context) {
+	l.ctx = ctx
 }

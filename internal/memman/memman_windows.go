@@ -1,27 +1,37 @@
 package memman
 
-import "github.com/STBoyden/memchanger/internal/procman"
+import (
+	"context"
 
-type windowsMemoryManager struct{}
+	"github.com/STBoyden/memchanger/internal/procman"
+)
 
-var _ MemoryManager = (*windowsMemoryManager)(nil)
+type windowsMemoryManager struct {
+	ctx context.Context
+}
+
+var _ platformMemoryManager = (*windowsMemoryManager)(nil)
 
 func getMemoryManager() *windowsMemoryManager {
 	return &windowsMemoryManager{}
 }
 
-func (wmm *windowsMemoryManager) LoadProcess(processInformation procman.ProcessInformation) error {
+func (w *windowsMemoryManager) LoadProcess(processInformation procman.ProcessInformation) error {
 	return nil
 }
 
-func (wmm *windowsMemoryManager) GetHeapAddressRange() (*AddressRange, error) {
+func (w *windowsMemoryManager) GetHeapAddressRange() (*AddressRange, error) {
 	return nil, nil
 }
 
-func (wmm *windowsMemoryManager) ReadMemory(offset int64, size int) ([]byte, error) {
+func (w *windowsMemoryManager) ReadMemory(offset int64, size int) ([]byte, error) {
 	return nil, nil
 }
 
-func (wmm *windowsMemoryManager) WriteMemory(offset int64, value any) (int, error) {
+func (w *windowsMemoryManager) WriteMemory(offset int64, value any) (int, error) {
 	return 0, nil
+}
+
+func (w *windowsMemoryManager) SetContext(ctx context.Context) {
+	w.ctx = ctx
 }

@@ -2,6 +2,7 @@ package procman
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -13,6 +14,8 @@ import (
 // LinuxProcessInformation contains specific information about a process on
 // Linux
 type LinuxProcessInformation struct {
+	ctx context.Context
+
 	MemoryFilePath string // Path to the mem file for the process
 	MapFilePath    string // Path to the map file for the process
 	SMapFilePath   string // Path to the smap file for the process
@@ -26,15 +29,17 @@ func (lpi *LinuxProcessInformation) GetPlatformType() platform {
 var _ platformProcessInformation = (*LinuxProcessInformation)(nil)
 
 // linuxProcessManager is a ProcessManager implementation for Linux
-type linuxProcessManager struct{}
+type linuxProcessManager struct {
+	ctx context.Context
+}
 
-var _ ProcessManager = (*linuxProcessManager)(nil)
+var _ platformProcessManager = (*linuxProcessManager)(nil)
 
 func getProcessManager() *linuxProcessManager {
 	return &linuxProcessManager{}
 }
 
-func (lpm *linuxProcessManager) GetProcessIDs() ([]int, error) {
+func (l *linuxProcessManager) GetProcessIDs() ([]int, error) {
 	// all the currently running processes are available in /proc folder on
 	// linux
 	procEntries, err := os.ReadDir("/proc")
@@ -68,7 +73,7 @@ func (lpm *linuxProcessManager) GetProcessIDs() ([]int, error) {
 	return procIDs, nil
 }
 
-func (lpm *linuxProcessManager) GetProcessInformation(processID int) (*ProcessInformation, error) {
+func (l *linuxProcessManager) GetProcessInformation(processID int) (*ProcessInformation, error) {
 	procStatusFile := fmt.Sprintf("/proc/%d/status", processID)
 
 	file, err := os.Open(procStatusFile)
@@ -109,4 +114,8 @@ func (lpm *linuxProcessManager) GetProcessInformation(processID int) (*ProcessIn
 	}
 
 	return &procInfo, nil
+}
+
+func (l *linuxProcessManager) SetContext(ctx context.Context) {
+	l.ctx = ctx
 }

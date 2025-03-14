@@ -11,24 +11,26 @@ import (
 // App struct
 type App struct {
 	ctx            context.Context
-	memoryManager  memman.MemoryManager
-	processManager procman.ProcessManager
+	processManager *procman.ProcessManager
+	memoryManager  *memman.MemoryManager
 }
 
-// NewApp creates a new App application struct
-func NewApp(processManager procman.ProcessManager, memoryManager memman.MemoryManager) *App {
-	return &App{memoryManager: memoryManager, processManager: processManager}
+func NewApp(processManager *procman.ProcessManager, memoryManager *memman.MemoryManager) *App {
+	return &App{processManager: processManager, memoryManager: memoryManager}
 }
 
-// startup is called when the app starts. The context is saved
-// so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+	a.processManager.SetContext(ctx)
+	a.memoryManager.SetContext(ctx)
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+func (a *App) GetMemoryManager() *memman.MemoryManager {
+	return a.memoryManager
+}
+
+func (a *App) GetProcessManager() *procman.ProcessManager {
+	return a.processManager
 }
 
 func (a *App) GetAllRunningProcesses() []string {

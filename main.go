@@ -23,15 +23,15 @@ func main() {
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:  "MemChanger",
-		Width:  1024,
-		Height: 768,
+		Width:  1280,
+		Height: 800,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		BackgroundColour: &options.RGBA{R: 0, G: 0, B: 0, A: 0},
+		BackgroundColour: &options.RGBA{R: 0, G: 0, B: 0, A: 1},
 		OnStartup:        app.startup,
 		Bind: []interface{}{
-			app,
+			app, processManager, memoryManager,
 		},
 	})
 

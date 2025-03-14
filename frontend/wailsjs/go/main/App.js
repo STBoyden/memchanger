@@ -6,6 +6,10 @@ export function GetAllRunningProcesses() {
   return window['go']['main']['App']['GetAllRunningProcesses']();
 }
 
-export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
+export function GetMemoryManager() {
+  return window['go']['main']['App']['GetMemoryManager']();
+}
+
+export function GetProcessManager() {
+  return window['go']['main']['App']['GetProcessManager']();
 }
