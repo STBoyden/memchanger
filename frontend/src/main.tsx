@@ -1,8 +1,9 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import "./style.css";
+import "./tailwind.css";
 import App from "./App";
-import { Suspense } from "react";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const container = document.getElementById("root");
 
@@ -10,8 +11,8 @@ const root = createRoot(container!);
 
 root.render(
   <React.StrictMode>
-    <Suspense>
+    <ThemeProvider>
       <App />
-    </Suspense>
+    </ThemeProvider>
   </React.StrictMode>,
 );
