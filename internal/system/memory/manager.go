@@ -4,15 +4,17 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/STBoyden/memchanger/internal/common"
+	"github.com/STBoyden/memchanger/internal/system/common"
 )
 
-const KIBIBYTE = 1024
-const MEBIBYTE = KIBIBYTE * KIBIBYTE
-const GIBIBYTE = MEBIBYTE * KIBIBYTE
-const KILOBYTE = 1000
-const MEGABYTE = KILOBYTE * KILOBYTE
-const GIGABYTE = MEGABYTE * KILOBYTE
+const (
+	KIBIBYTE = 1024
+	MEBIBYTE = KIBIBYTE * KIBIBYTE
+	GIBIBYTE = MEBIBYTE * KIBIBYTE
+	KILOBYTE = 1000
+	MEGABYTE = KILOBYTE * KILOBYTE
+	GIGABYTE = MEGABYTE * KILOBYTE
+)
 
 // MemoryManager is the exported struct that simply contains a platformManager field.
 type MemoryManager struct {

@@ -4,19 +4,21 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/STBoyden/memchanger/internal/memory"
-	"github.com/STBoyden/memchanger/internal/process"
+	"github.com/STBoyden/memchanger/internal/system"
+	"github.com/STBoyden/memchanger/internal/system/memory"
+	"github.com/STBoyden/memchanger/internal/system/process"
 )
 
 // App struct
 type App struct {
-	ctx            context.Context
-	processManager *process.ProcessManager
-	memoryManager  *memory.MemoryManager
+	ctx               context.Context
+	processManager    *process.ProcessManager
+	memoryManager     *memory.MemoryManager
+	systemInformation *system.SystemInformation
 }
 
 func NewApp(processManager *process.ProcessManager, memoryManager *memory.MemoryManager) *App {
-	return &App{processManager: processManager, memoryManager: memoryManager}
+	return &App{processManager: processManager, memoryManager: memoryManager, systemInformation: system.GetSystemInformation()}
 }
 
 func (a *App) startup(ctx context.Context) {
@@ -31,6 +33,10 @@ func (a *App) GetMemoryManager() *memory.MemoryManager {
 
 func (a *App) GetProcessManager() *process.ProcessManager {
 	return a.processManager
+}
+
+func (a *App) GetSystemInformation() *system.SystemInformation {
+	return a.systemInformation
 }
 
 func (a *App) GetAllRunningProcesses() []string {

@@ -3,7 +3,7 @@ package memory
 import (
 	"context"
 
-	"github.com/STBoyden/memchanger/internal/common"
+	"github.com/STBoyden/memchanger/internal/system/common"
 )
 
 type windowsMemoryManager struct {

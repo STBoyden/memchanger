@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/STBoyden/memchanger/internal/common"
-	"github.com/STBoyden/memchanger/internal/memory"
+	"github.com/STBoyden/memchanger/internal/system/common"
+	"github.com/STBoyden/memchanger/internal/system/memory"
 	"github.com/wneessen/go-fileperm"
 )
 
@@ -76,8 +76,9 @@ func (l *linuxProcessManager) GetProcessInformation(processID int) (*common.Proc
 	heapRange, err := memory.GetMemoryManager().GetHeapAddressRange()
 	if err != nil {
 		memoryUsage = -1
+	} else {
+		memoryUsage = heapRange.Size()
 	}
-	memoryUsage = heapRange.Size()
 
 	procInfo := common.ProcessInformation{
 		PID:                processID,
@@ -88,7 +89,8 @@ func (l *linuxProcessManager) GetProcessInformation(processID int) (*common.Proc
 			MapFilePath:    fmt.Sprintf("/proc/%d/maps", processID),
 			SMapFilePath:   fmt.Sprintf("/proc/%d/smaps", processID),
 			StatusFilePath: procStatusFile,
-		}}
+		},
+	}
 
 	scanner := bufio.NewScanner(file)
 	lines := 0

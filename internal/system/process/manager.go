@@ -3,7 +3,7 @@ package process
 import (
 	"context"
 
-	"github.com/STBoyden/memchanger/internal/common"
+	"github.com/STBoyden/memchanger/internal/system/common"
 )
 
 // ProcessManager is the exported struct that simply contains a platformManager field.

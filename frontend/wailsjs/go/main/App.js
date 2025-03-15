@@ -13,3 +13,7 @@ export function GetMemoryManager() {
 export function GetProcessManager() {
   return window['go']['main']['App']['GetProcessManager']();
 }
+
+export function GetSystemInformation() {
+  return window['go']['main']['App']['GetSystemInformation']();
+}

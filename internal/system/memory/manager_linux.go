@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/STBoyden/memchanger/internal/common"
+	"github.com/STBoyden/memchanger/internal/system/common"
 )
 
 type linuxMemoryManager struct {

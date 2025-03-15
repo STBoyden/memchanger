@@ -2,8 +2,10 @@ package memory
 
 import "fmt"
 
-type LoadProcessErrorReason string
-type ReadWriteMemoryErrorReason string
+type (
+	LoadProcessErrorReason     string
+	ReadWriteMemoryErrorReason string
+)
 
 const (
 	// NoSuchProcess LoadProcessErrorReason = "No such process"

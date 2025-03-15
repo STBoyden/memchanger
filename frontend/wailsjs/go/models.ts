@@ -73,3 +73,36 @@ export namespace process {
 
 }
 
+export namespace system {
+	
+	export class SystemInformation {
+	    GoOS: string;
+	    Kernel: string;
+	    Core: string;
+	    Platform: string;
+	    OS: string;
+	    Hostname: string;
+	    CPUs: number;
+	    SystemRam: number;
+	    UsedSystemRam: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new SystemInformation(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.GoOS = source["GoOS"];
+	        this.Kernel = source["Kernel"];
+	        this.Core = source["Core"];
+	        this.Platform = source["Platform"];
+	        this.OS = source["OS"];
+	        this.Hostname = source["Hostname"];
+	        this.CPUs = source["CPUs"];
+	        this.SystemRam = source["SystemRam"];
+	        this.UsedSystemRam = source["UsedSystemRam"];
+	    }
+	}
+
+}
+

@@ -3,8 +3,8 @@ package main
 import (
 	"embed"
 
-	"github.com/STBoyden/memchanger/internal/memory"
-	"github.com/STBoyden/memchanger/internal/process"
+	"github.com/STBoyden/memchanger/internal/system/memory"
+	"github.com/STBoyden/memchanger/internal/system/process"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -34,7 +34,6 @@ func main() {
 			app, processManager, memoryManager,
 		},
 	})
-
 	if err != nil {
 		println("Error:", err.Error())
 	}
