@@ -52,7 +52,6 @@ import {
   createColumnHelper,
   flexRender,
 } from "@tanstack/react-table";
-import { Combobox } from "./components/ui/combobox";
 
 const MIBIBYTE = 1024 * 1024;
 const GIBIBYTE = MIBIBYTE * 1024;
@@ -423,9 +422,9 @@ export default function App() {
 
   return (
     <div className="container mx-auto py-6 h-full">
-      <header className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Heap Memory Inspector</h1>
+      <header className="flex justify-between items-center mb-6 w-full">
+        <div className="w-full">
+          <h1 className="text-3xl font-bold">MemChanger</h1>
           <p className="text-muted-foreground">
             Inspect and search process memory across platforms
           </p>
