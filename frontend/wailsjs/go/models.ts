@@ -5,7 +5,7 @@ export namespace common {
 	    WindowName: string;
 	    PID: number;
 	    ExecutableFilePath: string;
-	    HeapMemoryUsage: number;
+	    HeapSize: number;
 	    PlatformInformation: any;
 	
 	    static createFrom(source: any = {}) {
@@ -18,7 +18,7 @@ export namespace common {
 	        this.WindowName = source["WindowName"];
 	        this.PID = source["PID"];
 	        this.ExecutableFilePath = source["ExecutableFilePath"];
-	        this.HeapMemoryUsage = source["HeapMemoryUsage"];
+	        this.HeapSize = source["HeapSize"];
 	        this.PlatformInformation = source["PlatformInformation"];
 	    }
 	}
@@ -83,6 +83,27 @@ export namespace system {
 	    OS: string;
 	    Hostname: string;
 	    CPUs: number;
+	    BrandName: string;
+	    VendorID: number;
+	    VendorString: string;
+	    HypervisorVendorID: number;
+	    HypervisorVendorString: string;
+	    PhysicalCores: number;
+	    ThreadsPerCore: number;
+	    LogicalCores: number;
+	    Family: number;
+	    Model: number;
+	    Stepping: number;
+	    CacheLine: number;
+	    Hz: number;
+	    BoostFreq: number;
+	    // Go type: struct { L1I int; L1D int; L2 int; L3 int }
+	    Cache: any;
+	    // Go type: cpuid
+	    SGX: any;
+	    // Go type: cpuid
+	    AMDMemEncryption: any;
+	    AVX10Level: number;
 	    SystemRam: number;
 	    UsedSystemRam: number;
 	
@@ -99,9 +120,45 @@ export namespace system {
 	        this.OS = source["OS"];
 	        this.Hostname = source["Hostname"];
 	        this.CPUs = source["CPUs"];
+	        this.BrandName = source["BrandName"];
+	        this.VendorID = source["VendorID"];
+	        this.VendorString = source["VendorString"];
+	        this.HypervisorVendorID = source["HypervisorVendorID"];
+	        this.HypervisorVendorString = source["HypervisorVendorString"];
+	        this.PhysicalCores = source["PhysicalCores"];
+	        this.ThreadsPerCore = source["ThreadsPerCore"];
+	        this.LogicalCores = source["LogicalCores"];
+	        this.Family = source["Family"];
+	        this.Model = source["Model"];
+	        this.Stepping = source["Stepping"];
+	        this.CacheLine = source["CacheLine"];
+	        this.Hz = source["Hz"];
+	        this.BoostFreq = source["BoostFreq"];
+	        this.Cache = this.convertValues(source["Cache"], Object);
+	        this.SGX = this.convertValues(source["SGX"], null);
+	        this.AMDMemEncryption = this.convertValues(source["AMDMemEncryption"], null);
+	        this.AVX10Level = source["AVX10Level"];
 	        this.SystemRam = source["SystemRam"];
 	        this.UsedSystemRam = source["UsedSystemRam"];
 	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
 	}
 
 }

@@ -21,7 +21,7 @@ type MemoryManager struct {
 	platformManager platformMemoryManager
 }
 
-func (m *MemoryManager) LoadProcess(processInformation common.ProcessInformation) error {
+func (m *MemoryManager) LoadProcess(processInformation *common.ProcessInformation) error {
 	return m.platformManager.LoadProcess(processInformation)
 }
 
@@ -42,11 +42,11 @@ func (m *MemoryManager) SetContext(ctx context.Context) {
 }
 
 type platformMemoryManager interface {
-	SetContext(context.Context)                                     // SetContext sets the context for the memory manager
-	LoadProcess(processInformation common.ProcessInformation) error // LoadProcess loads the process memory information into the memory manager
-	GetHeapAddressRange() (*AddressRange, error)                    // GetHeapAddressRange returns the address range of the heap of the loaded process
-	ReadMemory(offset int64, size int) ([]byte, error)              // ReadMemory gets a particular value in the memory of the loaded process
-	WriteMemory(offset int64, value any) (int, error)               // WriteMemory writes a particular value in the memory of the loaded process
+	SetContext(context.Context)                                      // SetContext sets the context for the memory manager
+	LoadProcess(processInformation *common.ProcessInformation) error // LoadProcess loads the process memory information into the memory manager
+	GetHeapAddressRange() (*AddressRange, error)                     // GetHeapAddressRange returns the address range of the heap of the loaded process
+	ReadMemory(offset int64, size int) ([]byte, error)               // ReadMemory gets a particular value in the memory of the loaded process
+	WriteMemory(offset int64, value any) (int, error)                // WriteMemory writes a particular value in the memory of the loaded process
 }
 
 // ReadMemoryHelper is a helper function to read memory using the size of a

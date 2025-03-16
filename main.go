@@ -24,11 +24,11 @@ func main() {
 	err := wails.Run(&options.App{
 		Title:  "MemChanger",
 		Width:  1280,
-		Height: 800,
+		Height: 1000,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		BackgroundColour: &options.RGBA{R: 0, G: 0, B: 0, A: 1},
+		BackgroundColour: options.NewRGB(2, 6, 24),
 		OnStartup:        app.startup,
 		Bind: []interface{}{
 			app, processManager, memoryManager,

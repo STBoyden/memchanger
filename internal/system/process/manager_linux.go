@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/STBoyden/memchanger/internal/system/common"
-	"github.com/STBoyden/memchanger/internal/system/memory"
 	"github.com/wneessen/go-fileperm"
 )
 
@@ -72,18 +71,10 @@ func (l *linuxProcessManager) GetProcessInformation(processID int) (*common.Proc
 		executableFilePath = "< none found >"
 	}
 
-	var memoryUsage int64
-	heapRange, err := memory.GetMemoryManager().GetHeapAddressRange()
-	if err != nil {
-		memoryUsage = -1
-	} else {
-		memoryUsage = heapRange.Size()
-	}
-
 	procInfo := common.ProcessInformation{
 		PID:                processID,
 		ExecutableFilePath: executableFilePath,
-		HeapMemoryUsage:    memoryUsage,
+		HeapSize:           0,
 		PlatformInformation: &common.LinuxProcessInformation{
 			MemoryFilePath: fmt.Sprintf("/proc/%d/mem", processID),
 			MapFilePath:    fmt.Sprintf("/proc/%d/maps", processID),

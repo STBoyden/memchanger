@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Filter, RefreshCw, Download, Layers, Cpu } from "lucide-react";
 import "./App.css";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -37,16 +38,23 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { system, common } from "../wailsjs/go/models";
+import {
+  GetAllRunningProcesses,
+  GetProcessManager,
+  GetSystemInformation,
+} from "../wailsjs/go/main/App";
+import * as processManager from "../wailsjs/go/process/ProcessManager";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  createColumnHelper,
+  flexRender,
+} from "@tanstack/react-table";
 
-// Mock data for processes
-const mockProcesses = [
-  { pid: 1234, name: "chrome.exe", memoryUsage: "256 MB" },
-  { pid: 2345, name: "firefox.exe", memoryUsage: "189 MB" },
-  { pid: 3456, name: "notepad.exe", memoryUsage: "12 MB" },
-  { pid: 4567, name: "vscode.exe", memoryUsage: "423 MB" },
-  { pid: 5678, name: "terminal", memoryUsage: "45 MB" },
-  { pid: 6789, name: "systemd", memoryUsage: "32 MB" },
-];
+const MIBIBYTE = 1024 * 1024;
+const GIBIBYTE = MIBIBYTE * 1024;
 
 // Mock data for memory regions
 const mockMemoryRegions = [
@@ -222,7 +230,10 @@ const generateHexDump = (startAddress: string) => {
   const baseAddr = Number.parseInt(startAddress.replace("0x", ""), 16);
 
   for (let i = 0; i < 16; i++) {
-    const addr = `0x${(baseAddr + i * 16).toString(16).toUpperCase().padStart(8, "0")}`;
+    const addr = `0x${(baseAddr + i * 16)
+      .toString(16)
+      .toUpperCase()
+      .padStart(8, "0")}`;
     const hexValues = [];
     const asciiValues = [];
 
@@ -233,7 +244,7 @@ const generateHexDump = (startAddress: string) => {
 
       // Convert to ASCII if printable, otherwise show a dot
       asciiValues.push(
-        value >= 32 && value <= 126 ? String.fromCharCode(value) : ".",
+        value >= 32 && value <= 126 ? String.fromCharCode(value) : "."
       );
     }
 
@@ -247,20 +258,149 @@ const generateHexDump = (startAddress: string) => {
   return rows;
 };
 
+function ProcessTable({
+  processes,
+  pageSize,
+  setSelectedProcess,
+  setActiveTab,
+}: {
+  processes: common.ProcessInformation[];
+  pageSize: 10 | 20 | 50 | 100;
+  setSelectedProcess: (value: common.ProcessInformation) => void;
+  setActiveTab: (value: string) => void;
+}) {
+  const handleProcessSelect = (pid: number) => {
+    processManager.GetProcessInformation(pid).then((info) => {
+      setSelectedProcess(info);
+      setActiveTab("memory-regions");
+    });
+  };
+
+  const [pagination, setPagination] = useState<{
+    pageSize: number;
+    pageIndex: number;
+  }>({ pageSize, pageIndex: 0 });
+
+  const columnHelper = createColumnHelper<common.ProcessInformation>();
+
+  const defaultColumns = useMemo(
+    () => [
+      columnHelper.accessor("PID", { id: "pid", header: "PID" }),
+      columnHelper.accessor("Name", { id: "name", header: "Process name" }),
+      columnHelper.accessor("HeapSize", {
+        id: "heap_size",
+        header: "Heap size (KB)",
+        cell: (bytes) => {
+          let amount = bytes.getValue();
+          if (amount === -1) {
+            amount = 0;
+          } else {
+            amount = Math.round(amount / 1000);
+          }
+
+          return `${amount} KB`;
+        },
+      }),
+      columnHelper.accessor("PID", {
+        header: "Actions",
+        cell: (pid) => (
+          <Button
+            variant={"ghost"}
+            onClick={() => handleProcessSelect(pid.getValue())}
+          >
+            Inspect
+          </Button>
+        ),
+      }),
+    ],
+    []
+  );
+
+  const table = useReactTable({
+    data: processes,
+    columns: defaultColumns,
+    onPaginationChange: setPagination,
+    rowCount: processes.length,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    state: {
+      pagination,
+    },
+  });
+
+  return (
+    <Table>
+      <TableHeader>
+        {table.getHeaderGroups().map((headerGroup) => (
+          <TableRow id={headerGroup.id}>
+            {headerGroup.headers.map((header) => (
+              <TableCell
+                id={header.id}
+                colSpan={header.colSpan}
+                className="font-bold"
+              >
+                {flexRender(
+                  header.column.columnDef.header,
+                  header.getContext()
+                )}
+              </TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableHeader>
+      <TableBody>
+        {table.getPaginationRowModel().rows.map((row) => (
+          <TableRow key={row.id}>
+            {row.getVisibleCells().map((cell) => (
+              <TableCell
+                key={cell.id}
+                className={
+                  ["pid", "heap_size"].includes(cell.column.id)
+                    ? "font-mono"
+                    : ""
+                }
+              >
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
 export default function App() {
-  const [selectedProcess, setSelectedProcess] = useState<string | null>(null);
+  const [selectedProcess, setSelectedProcess] =
+    useState<common.ProcessInformation | null>(null);
   const [searchPattern, setSearchPattern] = useState("");
   const [searchType, setSearchType] = useState("hex");
   const [activeTab, setActiveTab] = useState("processes");
   const [hexDump, setHexDump] = useState<any[]>([]);
   const [showSystemInfo, setShowSystemInfo] = useState(false);
   const [showMemoryMap, setShowMemoryMap] = useState(false);
+  const [processes, setProcesses] = useState<
+    common.ProcessInformation[] | null
+  >(null);
+  const [systemInfo, setSystemInfo] = useState<system.SystemInformation | null>(
+    null
+  );
 
-  const handleProcessSelect = (pid: string) => {
-    setSelectedProcess(pid);
-    setActiveTab("memory-regions");
-    // In a real app, we would fetch the actual memory regions for this process
-  };
+  useEffect(() => {
+    if (processes == null) {
+      GetAllRunningProcesses().then((procs) => {
+        setProcesses(procs);
+      });
+    }
+  });
+
+  useEffect(() => {
+    if (systemInfo == null) {
+      GetSystemInformation().then((sysInfo) => {
+        setSystemInfo(sysInfo);
+      });
+    }
+  });
 
   const handleRegionSelect = (address: string) => {
     setHexDump(generateHexDump(address));
@@ -329,37 +469,14 @@ export default function App() {
                 </Button>
               </div>
 
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[100px]">PID</TableHead>
-                    <TableHead>Process Name</TableHead>
-                    <TableHead>Memory Usage</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockProcesses.map((process) => (
-                    <TableRow key={process.pid}>
-                      <TableCell className="font-mono">{process.pid}</TableCell>
-                      <TableCell className="font-medium">
-                        {process.name}
-                      </TableCell>
-                      <TableCell>{process.memoryUsage}</TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          onClick={() =>
-                            handleProcessSelect(process.pid.toString())
-                          }
-                        >
-                          Inspect
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              {processes && (
+                <ProcessTable
+                  processes={processes}
+                  pageSize={10}
+                  setSelectedProcess={setSelectedProcess}
+                  setActiveTab={setActiveTab}
+                />
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -372,11 +489,10 @@ export default function App() {
                 <CardDescription>
                   Process:{" "}
                   {
-                    mockProcesses.find(
-                      (p) => p.pid.toString() === selectedProcess,
-                    )?.name
+                    processes?.find((p) => p.PID === selectedProcess?.PID)
+                      ?.WindowName
                   }{" "}
-                  (PID: {selectedProcess})
+                  (PID: {selectedProcess?.PID ?? "unknown"})
                 </CardDescription>
               </div>
               <Button
@@ -555,12 +671,12 @@ export default function App() {
                 <CardDescription>
                   Process:{" "}
                   {
-                    mockProcesses.find(
-                      (p) => p.pid.toString() === selectedProcess,
-                    )?.name
+                    processes?.find((p) => p.PID === selectedProcess?.PID)
+                      ?.WindowName
                   }{" "}
-                  (PID: {selectedProcess}) - Found {mockSearchResults.length}{" "}
-                  matches for "{searchPattern || "your search"}"
+                  (PID: {selectedProcess?.PID ?? "unknown"}) - Found{" "}
+                  {mockSearchResults.length} matches for "
+                  {searchPattern || "your search"}"
                 </CardDescription>
               </div>
               <div className="flex space-x-2">
@@ -616,7 +732,10 @@ export default function App() {
       </Tabs>
 
       {/* System Info Dialog */}
-      <Dialog open={showSystemInfo} onOpenChange={setShowSystemInfo}>
+      <Dialog
+        open={systemInfo != null && showSystemInfo}
+        onOpenChange={setShowSystemInfo}
+      >
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>System Information</DialogTitle>
@@ -629,13 +748,16 @@ export default function App() {
               <h3 className="text-lg font-semibold mb-2">Operating System</h3>
               <div className="grid grid-cols-2 gap-2">
                 <div className="text-sm text-muted-foreground">Name</div>
-                <div className="text-sm">{mockSystemInfo.os.name}</div>
+                <div className="text-sm">{`${systemInfo?.OS}`}</div>
                 <div className="text-sm text-muted-foreground">Version</div>
-                <div className="text-sm">{mockSystemInfo.os.version}</div>
+                <div className="text-sm">{systemInfo?.Core}</div>
+                <div className="text-sm text-muted-foreground">Hostname</div>
+                <div className="text-sm">{systemInfo?.Hostname}</div>
                 <div className="text-sm text-muted-foreground">
                   Architecture
                 </div>
-                <div className="text-sm">{mockSystemInfo.os.architecture}</div>
+
+                <div className="text-sm">{systemInfo?.Platform}</div>
               </div>
             </div>
 
@@ -645,20 +767,25 @@ export default function App() {
               <h3 className="text-lg font-semibold mb-2">CPU</h3>
               <div className="grid grid-cols-2 gap-2">
                 <div className="text-sm text-muted-foreground">Model</div>
-                <div className="text-sm">{mockSystemInfo.cpu.model}</div>
+                <div className="text-sm">{systemInfo?.BrandName}</div>
                 <div className="text-sm text-muted-foreground">
-                  Cores / Threads
+                  Physical Cores / Logical Cores
                 </div>
                 <div className="text-sm">
-                  {mockSystemInfo.cpu.cores} / {mockSystemInfo.cpu.threads}
+                  {systemInfo?.PhysicalCores} / {systemInfo?.LogicalCores}
                 </div>
                 <div className="text-sm text-muted-foreground">Usage</div>
                 <div className="flex items-center gap-2">
                   <Progress
-                    value={mockSystemInfo.cpu.usage}
+                    value={(systemInfo?.Hz!! / systemInfo?.BoostFreq!!) * 100}
                     className="h-2 w-[100px]"
                   />
-                  <span className="text-sm">{mockSystemInfo.cpu.usage}%</span>
+                  <span className="text-sm">
+                    {Math.round(
+                      (systemInfo?.Hz!! / systemInfo?.BoostFreq!!) * 100
+                    )}
+                    %
+                  </span>
                 </div>
               </div>
             </div>
@@ -669,19 +796,37 @@ export default function App() {
               <h3 className="text-lg font-semibold mb-2">Memory</h3>
               <div className="grid grid-cols-2 gap-2">
                 <div className="text-sm text-muted-foreground">Total</div>
-                <div className="text-sm">{mockSystemInfo.memory.total}</div>
+                <div className="text-sm">
+                  {`${(systemInfo?.SystemRam!! / GIBIBYTE).toFixed(1)} GB`}
+                </div>
                 <div className="text-sm text-muted-foreground">Used</div>
-                <div className="text-sm">{mockSystemInfo.memory.used}</div>
+                <div className="text-sm">
+                  {" "}
+                  {`${(systemInfo?.UsedSystemRam!! / GIBIBYTE).toFixed(1)} GB`}
+                </div>
                 <div className="text-sm text-muted-foreground">Free</div>
-                <div className="text-sm">{mockSystemInfo.memory.free}</div>
+                <div className="text-sm">
+                  {" "}
+                  {`${(
+                    (systemInfo?.SystemRam!! - systemInfo?.UsedSystemRam!!) /
+                    GIBIBYTE
+                  ).toFixed(1)} GB`}
+                </div>
                 <div className="text-sm text-muted-foreground">Usage</div>
                 <div className="flex items-center gap-2">
                   <Progress
-                    value={mockSystemInfo.memory.usagePercent}
+                    value={
+                      (systemInfo?.UsedSystemRam!! / systemInfo?.SystemRam!!) *
+                      100
+                    }
                     className="h-2 w-[100px]"
                   />
                   <span className="text-sm">
-                    {mockSystemInfo.memory.usagePercent}%
+                    {Math.round(
+                      (systemInfo?.UsedSystemRam!! / systemInfo?.SystemRam!!) *
+                        100
+                    )}
+                    %
                   </span>
                 </div>
               </div>

@@ -88,16 +88,21 @@ func (l *linuxMemoryManager) parseMemoryMap(mapFile string) error {
 	return nil
 }
 
-func (l *linuxMemoryManager) LoadProcess(processInformation common.ProcessInformation) error {
+func (l *linuxMemoryManager) LoadProcess(processInformation *common.ProcessInformation) error {
 	l.procInfo = processInformation.PlatformInformation.(*common.LinuxProcessInformation)
 	err := l.parseMemoryMap(l.procInfo.MapFilePath)
+	if err != nil {
+		return err
+	}
+
+	processInformation.HeapSize = l.heapAddressRange.Size()
 
 	return err
 }
 
 func (l *linuxMemoryManager) GetHeapAddressRange() (*AddressRange, error) {
 	if l.heapAddressRange == nil {
-		return nil, &ReadWriteMemoryError{reason: ProcessNotLoaded}
+		return nil, ErrProcessNotLoaded
 	}
 
 	return l.heapAddressRange, nil
@@ -105,13 +110,13 @@ func (l *linuxMemoryManager) GetHeapAddressRange() (*AddressRange, error) {
 
 func (l *linuxMemoryManager) ReadMemory(offset int64, size int) ([]byte, error) {
 	if l.heapAddressRange == nil {
-		return nil, &ReadWriteMemoryError{reason: ProcessNotLoaded}
+		return nil, ErrProcessNotLoaded
 	}
 
 	address := int64(l.heapAddressRange.Start) + int64(offset)
 
 	if address > l.heapAddressRange.End {
-		return nil, &ReadWriteMemoryError{reason: GivenAddressOutOfRange}
+		return nil, ErrGivenAddressOutOfRange
 	}
 
 	memFile, err := os.OpenFile(l.procInfo.MemoryFilePath, os.O_RDONLY, 0)
@@ -120,58 +125,60 @@ func (l *linuxMemoryManager) ReadMemory(offset int64, size int) ([]byte, error) 
 	}
 	defer memFile.Close()
 
-	bytes := make([]byte, size, size)
-	memFile.Seek(address, 0)
-	memFile.Read(bytes)
+	bytes := make([]byte, size)
+	_, _ = memFile.Seek(address, 0)
+	_, _ = memFile.Read(bytes)
 
 	return bytes, nil
 }
 
 func (l *linuxMemoryManager) WriteMemory(offset int64, value any) (int, error) {
 	if l.heapAddressRange == nil {
-		return 0, &ReadWriteMemoryError{reason: ProcessNotLoaded}
+		return 0, ErrProcessNotLoaded
 	}
 
 	address := int64(l.heapAddressRange.Start) + int64(offset)
 	size := (int)(reflect.TypeOf(value).Elem().Size())
 
 	if address > l.heapAddressRange.End {
-		return 0, &ReadWriteMemoryError{reason: GivenAddressOutOfRange}
+		return 0, ErrGivenAddressOutOfRange
 	}
 	if address+int64(size) > l.heapAddressRange.End {
-		return 0, &ReadWriteMemoryError{reason: SizeTooBig}
+		return 0, ErrSizeTooBig
 	}
 
-	bytes := make([]byte, size, size)
-	switch value.(type) {
+	bytes := make([]byte, size)
+	switch value := value.(type) {
 	case []byte:
-		bytes = value.([]byte)
-		break
-	case byte:
+		bytes = value
 	case int8:
-		bytes = append(bytes, value.(byte))
-		break
+		bytes = append(bytes, byte(value))
+	case byte:
+		bytes = append(bytes, value)
 	case string:
-		bytes = []byte(value.(string))
-		break
+		bytes = []byte(value)
 	case int16:
+		binary.NativeEndian.PutUint16(bytes, uint16(value))
 	case uint16:
-		binary.LittleEndian.PutUint16(bytes, value.(uint16))
-		break
+		binary.NativeEndian.PutUint16(bytes, value)
 	case float32:
+		binary.NativeEndian.PutUint32(bytes, uint32(value))
 	case int32:
+		binary.NativeEndian.PutUint32(bytes, uint32(value))
 	case int:
-	case uint32:
+		binary.NativeEndian.PutUint32(bytes, uint32(value))
 	case uint:
-		binary.LittleEndian.PutUint32(bytes, value.(uint32))
-		break
+		binary.NativeEndian.PutUint32(bytes, uint32(value))
+	case uint32:
+		binary.NativeEndian.PutUint32(bytes, value)
 	case float64:
+		binary.NativeEndian.PutUint64(bytes, uint64(value))
 	case int64:
+		binary.NativeEndian.PutUint64(bytes, uint64(value))
 	case uint64:
-		binary.LittleEndian.PutUint64(bytes, value.(uint64))
-		break
+		binary.NativeEndian.PutUint64(bytes, value)
 	default:
-		return 0, &ReadWriteMemoryError{reason: InvalidValueType}
+		return 0, ErrInvalidValueType
 	}
 
 	memFile, err := os.OpenFile(l.procInfo.MemoryFilePath, os.O_WRONLY, 0)
@@ -180,7 +187,7 @@ func (l *linuxMemoryManager) WriteMemory(offset int64, value any) (int, error) {
 	}
 	defer memFile.Close()
 
-	memFile.Seek(address, 0)
+	_, _ = memFile.Seek(address, 0)
 	return memFile.Write(bytes)
 }
 

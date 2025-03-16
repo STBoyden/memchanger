@@ -1,37 +1,12 @@
 package memory
 
-import "fmt"
-
-type (
-	LoadProcessErrorReason     string
-	ReadWriteMemoryErrorReason string
+import (
+	"errors"
 )
 
-const (
-	// NoSuchProcess LoadProcessErrorReason = "No such process"
-
-	ProcessNotLoaded       ReadWriteMemoryErrorReason = "Process not loaded"
-	GivenAddressOutOfRange                            = "Given offset out of range of process heap"
-	SizeTooBig                                        = "Size of value at given offset is too big for heap"
-	InvalidValueType                                  = "Invalid value type"
+var (
+	ErrProcessNotLoaded       = errors.New("process not loaded")
+	ErrGivenAddressOutOfRange = errors.New("given offset out of range of process heap")
+	ErrSizeTooBig             = errors.New("size of value at given offset is too big for heap")
+	ErrInvalidValueType       = errors.New("invalid value type")
 )
-
-// type LoadProcessError struct {
-// 	reason LoadProcessErrorReason
-// }
-
-// func (lpe *LoadProcessError) Error() string {
-// 	return fmt.Sprintf("Failed to load process: %s", lpe.reason)
-// }
-
-// var _ error = (*LoadProcessError)(nil)
-
-type ReadWriteMemoryError struct {
-	reason ReadWriteMemoryErrorReason
-}
-
-func (rme *ReadWriteMemoryError) Error() string {
-	return fmt.Sprintf("Failed to read memory of process: %s", rme.reason)
-}
-
-var _ error = (*ReadWriteMemoryError)(nil)

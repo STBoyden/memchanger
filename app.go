@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/STBoyden/memchanger/internal/system"
+	"github.com/STBoyden/memchanger/internal/system/common"
 	"github.com/STBoyden/memchanger/internal/system/memory"
 	"github.com/STBoyden/memchanger/internal/system/process"
 )
@@ -39,21 +39,26 @@ func (a *App) GetSystemInformation() *system.SystemInformation {
 	return a.systemInformation
 }
 
-func (a *App) GetAllRunningProcesses() []string {
+func (a *App) GetAllRunningProcesses() []common.ProcessInformation {
 	processes, err := a.processManager.GetProcessIDs()
 	if err != nil {
 		return nil
 	}
 
-	processNames := []string{}
+	processList := []common.ProcessInformation{}
 	for _, pid := range processes {
 		procInfo, err := a.processManager.GetProcessInformation(pid)
 		if err != nil {
 			continue
 		}
 
-		processNames = append(processNames, fmt.Sprintf("%s (%d)", procInfo.Name, pid))
+		err = a.memoryManager.LoadProcess(procInfo)
+		if err != nil {
+			continue
+		}
+
+		processList = append(processList, *procInfo)
 	}
 
-	return processNames
+	return processList
 }

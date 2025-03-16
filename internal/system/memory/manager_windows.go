@@ -16,7 +16,7 @@ func getMemoryManager() *windowsMemoryManager {
 	return &windowsMemoryManager{}
 }
 
-func (w *windowsMemoryManager) LoadProcess(processInformation common.ProcessInformation) error {
+func (w *windowsMemoryManager) LoadProcess(processInformation *common.ProcessInformation) error {
 	return nil
 }
 
