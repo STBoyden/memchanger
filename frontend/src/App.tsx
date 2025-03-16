@@ -52,6 +52,7 @@ import {
   createColumnHelper,
   flexRender,
 } from "@tanstack/react-table";
+import { Combobox } from "./components/ui/combobox";
 
 const MIBIBYTE = 1024 * 1024;
 const GIBIBYTE = MIBIBYTE * 1024;
@@ -113,32 +114,6 @@ const mockSearchResults = [
     ascii: "password1234",
   },
 ];
-
-// Mock system information
-const mockSystemInfo = {
-  os: {
-    name: "Windows 10 Pro",
-    version: "21H2 (Build 19044.1826)",
-    architecture: "x64",
-  },
-  cpu: {
-    model: "Intel(R) Core(TM) i7-10700K @ 3.80GHz",
-    cores: 8,
-    threads: 16,
-    usage: 23,
-  },
-  memory: {
-    total: "32.0 GB",
-    used: "12.4 GB",
-    free: "19.6 GB",
-    usagePercent: 39,
-  },
-  processes: {
-    total: 142,
-    threads: 2156,
-    handles: 78432,
-  },
-};
 
 // Mock memory map data
 const mockMemoryMap = [
@@ -366,6 +341,38 @@ function ProcessTable({
           </TableRow>
         ))}
       </TableBody>
+      <TableFooter>
+        <TableCell colSpan={defaultColumns.length + 1}>
+          <Button
+            variant={"secondary"}
+            onClick={() => table.firstPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            {"<<"}
+          </Button>
+          <Button
+            variant={"secondary"}
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            {"<"}
+          </Button>
+          <Button
+            variant={"secondary"}
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            {">"}
+          </Button>
+          <Button
+            variant={"secondary"}
+            onClick={() => table.lastPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            {">>"}
+          </Button>
+        </TableCell>
+      </TableFooter>
     </Table>
   );
 }
@@ -840,15 +847,7 @@ export default function App() {
                 <div className="text-sm text-muted-foreground">
                   Total Processes
                 </div>
-                <div className="text-sm">{mockSystemInfo.processes.total}</div>
-                <div className="text-sm text-muted-foreground">Threads</div>
-                <div className="text-sm">
-                  {mockSystemInfo.processes.threads}
-                </div>
-                <div className="text-sm text-muted-foreground">Handles</div>
-                <div className="text-sm">
-                  {mockSystemInfo.processes.handles}
-                </div>
+                <div className="text-sm">{systemInfo?.Processes}</div>
               </div>
             </div>
           </div>

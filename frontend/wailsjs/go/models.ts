@@ -106,6 +106,7 @@ export namespace system {
 	    AVX10Level: number;
 	    SystemRam: number;
 	    UsedSystemRam: number;
+	    Processes: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new SystemInformation(source);
@@ -140,6 +141,7 @@ export namespace system {
 	        this.AVX10Level = source["AVX10Level"];
 	        this.SystemRam = source["SystemRam"];
 	        this.UsedSystemRam = source["UsedSystemRam"];
+	        this.Processes = source["Processes"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
