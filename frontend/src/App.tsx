@@ -1,5 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Filter, RefreshCw, Download, Layers, Cpu } from "lucide-react";
+import {
+  Search,
+  Filter,
+  RefreshCw,
+  Download,
+  Layers,
+  Cpu,
+  ChevronsRight,
+  ChevronRight,
+  ChevronLeft,
+  ChevronsLeft,
+} from "lucide-react";
 import "./App.css";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +66,9 @@ import {
 
 const MIBIBYTE = 1024 * 1024;
 const GIBIBYTE = MIBIBYTE * 1024;
+
+const pageSizes = [10, 20, 50, 100] as const;
+type PageSize = (typeof pageSizes)[number];
 
 // Mock data for memory regions
 const mockMemoryRegions = [
@@ -239,7 +253,7 @@ function ProcessTable({
   setActiveTab,
 }: {
   processes: common.ProcessInformation[];
-  pageSize: 10 | 20 | 50 | 100;
+  pageSize: PageSize;
   setSelectedProcess: (value: common.ProcessInformation) => void;
   setActiveTab: (value: string) => void;
 }) {
@@ -341,35 +355,54 @@ function ProcessTable({
         ))}
       </TableBody>
       <TableFooter>
-        <TableCell colSpan={defaultColumns.length + 1}>
+        <TableCell colSpan={defaultColumns.length - 2}>
           <Button
             variant={"secondary"}
             onClick={() => table.firstPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            {"<<"}
+            <ChevronsLeft className="w-4 h-4" />
           </Button>
           <Button
             variant={"secondary"}
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            {"<"}
+            <ChevronLeft className="w-4 h-4" />
           </Button>
           <Button
             variant={"secondary"}
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            {">"}
+            <ChevronRight className="w-4 h-4" />
           </Button>
           <Button
             variant={"secondary"}
             onClick={() => table.lastPage()}
             disabled={!table.getCanNextPage()}
           >
-            {">>"}
+            <ChevronsRight className="w-4 h-4" />
           </Button>
+        </TableCell>
+        <TableCell>
+          Page {pagination.pageIndex + 1} of {table.getPageCount()}
+        </TableCell>
+        <TableCell>
+          <Select
+            onValueChange={(value) =>
+              setPagination({ ...pagination, pageSize: parseInt(value) })
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select page size" />
+            </SelectTrigger>
+            <SelectContent>
+              {pageSizes.map((size) => (
+                <SelectItem value={`${size}`}>{size}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </TableCell>
       </TableFooter>
     </Table>
